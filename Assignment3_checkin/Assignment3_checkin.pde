@@ -84,16 +84,15 @@ boolean A_star(){
   // add start point to the queue
   START.isVisited = true;
   fringe.add(START);
-  println("a*!!");
+
   int iter = 0;
   
   while (fringe.size() >0){
     iter++;
-    println(iter);
+    //println(iter);
     
     Milestone curr = fringe.poll();
     if(curr.isGoal) {
-      println("FINISH!!");
       return true;
     }
     int num_neighbors = curr.neighbors.size();
@@ -107,7 +106,6 @@ boolean A_star(){
     }
   }
   
-  println("A* FINISH!!");
   return true;
 }
 
@@ -182,12 +180,12 @@ void setup() {
   path.add(curr);
   Collections.reverse(path);
   
-  println("len " + path.size());
   
   agent = new Agent(start);
   agent.setVel(PVector.sub(path.get(idx+1).pos,path.get(idx).pos).normalize());
   idx ++;
   
+  textSize(25);
 }
 
 void draw() {
@@ -245,6 +243,8 @@ void draw() {
   
   noStroke();
   
+  fill(255,0,0);
+  text("Please press ENTER to check agent's movement.",50,30);
   
 }
 
