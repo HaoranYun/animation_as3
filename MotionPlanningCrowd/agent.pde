@@ -49,10 +49,13 @@ class Agent{
       idx = 0;
       return;
     }
-    
+    float segmentLen = straightDistance(myPath.get(idx).pos, myPath.get(idx-1).pos);
     float distForward = straightDistance(myPath.get(idx).pos,pos);
-    if(distForward < reachOrNotRadius && idx < myPath.size() -1){
-        idx ++;
+    if(SMOOTH && distForward/segmentLen< 0.4) smoothPath();
+    else{
+        if(distForward < reachOrNotRadius && idx < myPath.size() -1){
+          idx ++;
+        }
     }
     
     goalForce = PVector.sub(myPath.get(idx).pos,pos).normalize().mult(maxSpeed).sub(vel);
@@ -68,7 +71,15 @@ class Agent{
     if(!TTC) collisionSolver();
   }
   
-  
+  void smoothPath(){
+    if(idx == myPath.size() - 1) return;
+    if(checkPath_CCD(pos,myPath.get(idx+1).pos )){
+      idx ++;
+       println("SMOOTH");
+      smoothPath();
+    }
+    
+  }
   void collisionSolver(){
     if(myPath.size() < 1 || reachGoal) return;
     

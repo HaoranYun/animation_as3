@@ -24,7 +24,7 @@ boolean MOVING = false; // default: don't move until key ENTER is pressed
 boolean MOVE_GOAL = false; // defualt: when direction keys are pressed, obstacle move
 
 boolean TTC = false;
-boolean SMOOTH = false;
+boolean SMOOTH = true;
 boolean ODD_BEHAVIOR = false;
 
 boolean COMPARE_INTERACTION_MODE = false;
@@ -440,9 +440,9 @@ void draw() {
           //noStroke();
           strokeWeight(10);
           fill(255,0,0);
-          line(agents.get(i).myPath.get(j-1).pos.x,agents.get(i).myPath.get(j-1).pos.y,0,agents.get(i).myPath.get(j).pos.x,agents.get(i).myPath.get(j).pos.y,0);
-          //translate(agents.get(i).myPath.get(j).pos.x, agents.get(i).myPath.get(j).pos.y, 0);
-          //sphere(5);
+          //line(agents.get(i).myPath.get(j-1).pos.x,agents.get(i).myPath.get(j-1).pos.y,0,agents.get(i).myPath.get(j).pos.x,agents.get(i).myPath.get(j).pos.y,0);
+          translate(agents.get(i).myPath.get(j).pos.x, agents.get(i).myPath.get(j).pos.y, 0);
+          sphere(5);
           popMatrix();
           //line(agents.get(i).myPath.get(j-1).pos.x,agents.get(i).myPath.get(j-1).pos.y,agents.get(i).myPath.get(j).pos.x,agents.get(i).myPath.get(j).pos.y);
         }
