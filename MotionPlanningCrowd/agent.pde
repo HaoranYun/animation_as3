@@ -20,11 +20,15 @@ class Agent{
   
   PVector prevPos;
   
+  
+  //store RRT graph
+  ArrayList<Milestone> myGraph;
   Agent(PVector position, float radius){
     pos = new PVector(position.x, position.y);
     goalForce = new PVector(0,0);
     r = radius;
     prevPos = pos;
+    if(COMPARE_NAVIGATION_MODE) reachOrNotRadius = 5;
   }
   
   void update(){
@@ -52,7 +56,7 @@ class Agent{
     }
     
     goalForce = PVector.sub(myPath.get(idx).pos,pos).normalize().mult(maxSpeed).sub(vel);
-
+    if(COMPARE_NAVIGATION_MODE) force = new PVector(0,0,0);
 
     if(force.mag() > 0)  vel.add(PVector.mult(force,dt));
     vel.add(PVector.mult(goalForce,dt));
@@ -75,6 +79,7 @@ class Agent{
     
   }
   void stuckChecker(){
+    if(COMPARE_NAVIGATION_MODE) return;
     PVector dist = PVector.sub(pos,prevPos);
     if(dist.mag() < reachOrNotRadius){
       prevPos = pos;
@@ -189,6 +194,12 @@ class Agent{
     searchPath(pos,myGoal.pos);
   }
   
+  void setMyGoalRRT(PVector goal){
+    myGoal = new Milestone(goal.copy());
+    myGoal.isGoal = true;
+    searchRRTPath(pos,myGoal.pos);
+  }
+  
   
   void searchPath(PVector start, PVector goal){
     float s = millis();
@@ -278,6 +289,82 @@ class Agent{
     idx++;
   }
   
+  // RRT implementation
+   void searchRRTPath(PVector start, PVector goal){
+    myPath = new ArrayList<Milestone>();
+    idx = 0;
+    myStart = new Milestone(start.copy());
+    myGoal = new Milestone(goal.copy());
+    myGoal.isGoal =true;
+    myStart.reset(start,goal);
+    myGoal.reset(start,goal);
+    vel = new PVector(0,0);
+    myGraph = new ArrayList<Milestone>();
+    
+    BuildRRTPath();
+  }
   
+  void BuildRRTPath(){
+    int count = 0;
+    boolean feasible;
+    //PVector 
+    myGraph.add(myStart);
+    
+    while(true){
+      count ++;
+      if(count % 10 == 0){
+        //check goal connection
+        for(int i = 0; i < myGraph.size(); i++){
+          if(checkPath_CCD( myGoal.pos,myGraph.get(i).pos))
+          {
+ 
+            myGoal.parent = myGraph.get(i);
+            buildPath();
+            
+            return;
+          }
+          
+        }
+      }
+      
+      PVector randPnt = new PVector(random(55,595), random(55,595));
+      float minDist = Float.MAX_VALUE;
+      int minIdx = Integer.MAX_VALUE;
+      for(int i = 0; i < myGraph.size(); i++){
+        float dist = PVector.sub(myGraph.get(i).pos, randPnt).mag();
+        if(dist < minDist) {
+          minDist = dist;
+          minIdx = i;
+        }
+      }
+      
+      Milestone nearestNeighbor = myGraph.get(minIdx);
+      if(!checkPath_CCD(nearestNeighbor.pos, randPnt)){
+        walkUntilNoCollision(nearestNeighbor.pos, randPnt);
+      }
+      
+      Milestone newPnt = new Milestone(randPnt);
+      newPnt.parent = nearestNeighbor;
+      myGraph.add(newPnt);
+      
+    }
+    
+    
+  }
+  void walkUntilNoCollision(PVector NeighborPos, PVector randPnt){
+    PVector dir = PVector.sub(NeighborPos,randPnt);
+    float dist = dir.mag();
+    dir.normalize();
+    float step = 1;
+
+    
+    while(!checkPath_CCD(NeighborPos,randPnt)){
+      randPnt.add( PVector.mult(dir,step));
+      step += 1;
+      if(step > dist|| randPnt.x < 55 || randPnt.y< 55|| randPnt.x > 595 || randPnt.y > 595){
+        break;
+      }
+    }
+  }
   
 }

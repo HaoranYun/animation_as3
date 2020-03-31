@@ -8,8 +8,8 @@ float character_radius = 7.5;
 Milestone[] sample_points = new Milestone[sample_number];
 int[][] paths_status = new int[sample_number+2][sample_number+2];
 
-PVector movingGoal1 = new PVector(600,300);
-PVector movingGoal2 = new PVector(600,300);
+PVector movingGoal1 = new PVector(600,100);
+PVector movingGoal2 = new PVector(600,100);
 
 
 
@@ -19,7 +19,7 @@ ArrayList<Obstacle> obstacles =new  ArrayList<Obstacle>();
 int searchLimit = 1000;
 
 // all boolean values that control the simulation behaviors
-boolean SHOWPATH = false;// defualt: show path
+boolean SHOWPATH = true;// defualt: show path
 boolean MOVING = false; // default: don't move until key ENTER is pressed
 boolean MOVE_GOAL = false; // defualt: when direction keys are pressed, obstacle move
 
@@ -27,8 +27,11 @@ boolean TTC = false;
 boolean SMOOTH = false;
 boolean ODD_BEHAVIOR = false;
 
-boolean COMPARE_MODE =true;
+boolean COMPARE_INTERACTION_MODE = false;
 int AgentsInCompareMode = 20;
+
+boolean COMPARE_NAVIGATION_MODE = true;
+int CompareIteration = 100;
 
 int runTime = 0;
 
@@ -111,11 +114,23 @@ boolean checkPath_CCD(PVector p1, PVector p2){
 
 
 void search(){
+  println(searchLimit);
   if(searchLimit < 0) {
-    searchLimit = 1000;
+    //searchLimit = 1000;
     return;
   }
+  
+  
+ if(COMPARE_NAVIGATION_MODE) {
+      if(agents.get(0).myGoal != null)agents.get(0).searchRRTPath(agents.get(0).pos, agents.get(0).myGoal.pos);
+      if(agents.get(1).myGoal != null) agents.get(1).searchPath(agents.get(1).pos,agents.get(1).myGoal.pos);
+      if(agents.get(1).myPath.size()<1) sampleAllPoints();
+      return;
+  }
+  
   int allNoPath = 0;
+  
+  
   for(int i = 0; i < agents.size(); i++){
     //agents.get(i).setGoalForce(new PVector(0,0));
     if(!agents.get(i).reachGoal)
@@ -133,10 +148,16 @@ void search(){
     }
   
   }
-  if(allNoPath > 15) {
+  // if half agents could not find path, we will re-sample points
+  int limit = 15;
+  
+  if(allNoPath > limit) {
     sampleAllPoints();
-    search();
+    //search();
   }
+  
+
+
 }
 
 
@@ -182,11 +203,13 @@ void sampleAllPoints(){
       }
     }
   }
+  search();
 }
 
 
 
 void sampleSomePoints(){
+  if(COMPARE_NAVIGATION_MODE)return;
     for (int i = 0; i < sample_number; i++) {
     if(!isFeasible(sample_points[i].pos)){
       PVector sample_point = new PVector(random(55,595), random(55,595));
@@ -214,7 +237,6 @@ void sampleSomePoints(){
   
   searchLimit = 1000;
   search();
-  
 }
 
 
@@ -228,8 +250,9 @@ int countReachedAgent(){
   return count;
 }
 
-void setupCompareMode(){
-
+void setupCompareInteractionMode(){
+  movingGoal1 = new PVector(600,300);
+  movingGoal2 = new PVector(600,300);
   for(int i = 0; i< 4; i++){
     obstacles.add(new Obstacle(obstacle_radius, 400, 100 + 100 *i));
   }
@@ -268,7 +291,18 @@ void setupCommonMode(){
 }
 
 
+void  setupCompareNavigationMode(){
+  for(int i = 0; i< 4; i++){
+    obstacles.add(new Obstacle(obstacle_radius, 400, 100 + 100 *i));
+  }
 
+  for(int i = 0; i< 1; i++){
+    obstacles.add(new Obstacle(obstacle_radius, 520, 400));
+  }
+  for(int i = 0; i < 2; i ++){
+    agents.add(new Agent(new PVector(80, 300),character_radius));
+  }
+}
 
 void checkCompareResult(){
     if(countReachedAgent() > 0.94 * agents.size() && runTime < 2){
@@ -288,7 +322,22 @@ void checkCompareResult(){
   }
 }
 
+void checkNavigationCompareResult(){
+  float startTime2 = millis();
+  for(int i = 0; i < 20; i ++){
+    agents.get(1).searchPath(agents.get(0).pos, movingGoal1);
+  }
+  println("PRM running Time: "+(millis() -startTime2));
+  
+  
+ startTime = millis();
+ for(int i = 0; i < 20; i ++){
+    agents.get(0).searchRRTPath(agents.get(0).pos, movingGoal1);
+  }
+  println("RRT running Time: "+(millis() -startTime));
 
+  println(agents.get(0).myPath.size());
+}
 
 void setup() {
   
@@ -297,8 +346,11 @@ void setup() {
   g_cam = new Camera3();
   
   // set up obstacles 
-  if(COMPARE_MODE){
-    setupCompareMode();
+  if(COMPARE_INTERACTION_MODE){
+    setupCompareInteractionMode();
+  }
+  else if(COMPARE_NAVIGATION_MODE){
+    setupCompareNavigationMode();
   }
   else{
     setupCommonMode();
@@ -307,7 +359,10 @@ void setup() {
   sampleAllPoints();
   
   startTime = millis();
-  search();
+  if(COMPARE_NAVIGATION_MODE) checkNavigationCompareResult();
+  //else search();
+  
+  
 }
 
 void draw() {
@@ -377,13 +432,32 @@ void draw() {
       popMatrix();
       if(SHOWPATH && agents.get(i).myPath.size()>0 ){
         for(int j = 1; j < agents.get(i).myPath.size(); j++){
-          line(agents.get(i).myPath.get(j-1).pos.x,agents.get(i).myPath.get(j-1).pos.y,agents.get(i).myPath.get(j).pos.x,agents.get(i).myPath.get(j).pos.y);
+          pushMatrix();
+          noStroke();
+          fill(255,0,0);
+
+          translate(agents.get(i).myPath.get(j).pos.x, agents.get(i).myPath.get(j).pos.y, 0);
+          sphere(5);
+          popMatrix();
+          //line(agents.get(i).myPath.get(j-1).pos.x,agents.get(i).myPath.get(j-1).pos.y,agents.get(i).myPath.get(j).pos.x,agents.get(i).myPath.get(j).pos.y);
         }
       }
   }
   
-  if(COMPARE_MODE) checkCompareResult();
+  if(COMPARE_INTERACTION_MODE) checkCompareResult();
+  
+  pushMatrix();
+  noStroke();
+  fill(0,0,255);
 
+  translate(agents.get(0).myGoal.pos.x, agents.get(0).myGoal.pos.y, 0);
+  if(!(COMPARE_INTERACTION_MODE|| COMPARE_NAVIGATION_MODE)) 
+  {
+    fill(0,255,0);
+    translate(agents.get(20).myGoal.pos.x, agents.get(20).myGoal.pos.y, 0);
+  }
+  sphere(10);
+  popMatrix();
   
   fill(255,0,0);
   text("Please press ENTER to check agent's movement.",50,30);
@@ -430,8 +504,15 @@ void keyPressed(){
     obstacles.get(obstacles.size()-1).center.add(moveDirection);
   }
   else{
-    for(int i = 0; i < agents.size(); i ++){
-      agents.get(i).setMyGoal(PVector.add(moveDirection,agents.get(i).myGoal.pos));
+    if(COMPARE_NAVIGATION_MODE){
+      
+      agents.get(0).setMyGoalRRT(PVector.add(moveDirection,agents.get(0).myGoal.pos));
+      agents.get(1).setMyGoal(PVector.add(moveDirection,agents.get(1).myGoal.pos));
+    }
+    else{
+      for(int i = 0; i < agents.size(); i ++){
+        agents.get(i).setMyGoal(PVector.add(moveDirection,agents.get(i).myGoal.pos));
+      }
     }
   }
   
