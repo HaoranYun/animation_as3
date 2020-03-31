@@ -311,6 +311,8 @@ void setup() {
 }
 
 void draw() {
+  background(255,255,255);
+  
   g_cam.MoveInLocalSpace(new PVector(g_flags[0] * 0.8, 0, 0));
   g_cam.MoveInLocalSpace(new PVector(0, g_flags[1] * 0.8, 0));
   g_cam.MoveInLocalSpace(new PVector(0, 0, g_flags[2] * 0.8));
@@ -437,6 +439,15 @@ void keyPressed(){
     if(MOVE_GOAL) search();
     else sampleSomePoints();
   }
+}
+
+void keyReleased() {
+  if      (key == 'w' || key == 's') { g_flags[1] = 0; }
+  else if (key == 'a' || key == 'd') { g_flags[0] = 0; }
+  else if (key == 'q' || key == 'e') { g_flags[2] = 0; }
+  else if (key == 't' || key == 'g') { g_flags[3] = 0; }
+  else if (key == 'f' || key == 'h') { g_flags[4] = 0; }
+  else if (key == 'r' || key == 'y') { g_flags[5] = 0; }
 }
 
 void mousePressed(){
