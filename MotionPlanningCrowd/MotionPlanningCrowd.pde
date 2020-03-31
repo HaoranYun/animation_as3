@@ -23,15 +23,16 @@ boolean SHOWPATH = true;// defualt: show path
 boolean MOVING = false; // default: don't move until key ENTER is pressed
 boolean MOVE_GOAL = false; // defualt: when direction keys are pressed, obstacle move
 
-boolean TTC = false;
-boolean SMOOTH = true;
+
+
+boolean TTC = true;
 boolean ODD_BEHAVIOR = false;
 
 boolean COMPARE_INTERACTION_MODE = false;
 int AgentsInCompareMode = 20;
 
-boolean COMPARE_NAVIGATION_MODE = true;
-int CompareIteration = 100;
+boolean COMPARE_NAVIGATION_MODE = false;
+boolean SMOOTH = COMPARE_NAVIGATION_MODE;
 
 int runTime = 0;
 
@@ -456,13 +457,19 @@ void draw() {
   fill(0,255,255);
 
   translate(agents.get(0).myGoal.pos.x, agents.get(0).myGoal.pos.y, 0);
-  if(!(COMPARE_INTERACTION_MODE|| COMPARE_NAVIGATION_MODE)) 
-  {
-    fill(0,255,0);
-    translate(agents.get(20).myGoal.pos.x, agents.get(20).myGoal.pos.y, 0);
-  }
   sphere(10);
   popMatrix();
+  if(!(COMPARE_INTERACTION_MODE || COMPARE_NAVIGATION_MODE)) 
+  {
+    pushMatrix();
+    noStroke();
+    fill(0,255,0);
+    translate(agents.get(20).myGoal.pos.x, agents.get(20).myGoal.pos.y, 0);
+    sphere(10);
+    popMatrix();
+  }
+  
+
   
   fill(255,0,0);
   text("Please press ENTER to check agent's movement.",50,30);
