@@ -386,6 +386,44 @@ void draw() {
   //rect(50,50,600,600); // rectangle
   
   
+  // walls
+  pushMatrix();
+  fill(200,200,200);
+  translate(0, 300, 150);
+  stroke(10);
+  box(50, 600, 300);
+  popMatrix();
+  
+  pushMatrix();
+  fill(200,200,200);
+  translate(650,300,150);
+  stroke(10);
+  box(50,600,300);
+  popMatrix();
+  
+  pushMatrix();
+  fill(200,200,200);
+  translate(325,-25,150);
+  stroke(10);
+  box(600,50,300);
+  popMatrix();
+  
+  pushMatrix();
+  fill(200,200,200);
+  translate(325,625,150);
+  stroke(10);
+  box(600,50,300);
+  popMatrix();
+  
+  //floor
+  pushMatrix();
+  fill(51,255,51);
+  translate(325,300,-25);
+  stroke(10);
+  box(600,600,50);
+  popMatrix();
+  
+  
   // draw all obstacles
   fill(0,0,255);
   for(int i = 0; i< obstacles.size(); i ++){
@@ -400,6 +438,8 @@ void draw() {
     popMatrix();
     
   }
+  
+
 
 
   //draw all nodes 
@@ -439,13 +479,14 @@ void draw() {
         for(int j = 1; j < agents.get(i).myPath.size(); j++){
           pushMatrix();
           //noStroke();
-          strokeWeight(10);
+          //strokeWeight(10);
           fill(255,0,0);
           //line(agents.get(i).myPath.get(j-1).pos.x,agents.get(i).myPath.get(j-1).pos.y,0,agents.get(i).myPath.get(j).pos.x,agents.get(i).myPath.get(j).pos.y,0);
           translate(agents.get(i).myPath.get(j).pos.x, agents.get(i).myPath.get(j).pos.y, 0);
           sphere(5);
           popMatrix();
-          //line(agents.get(i).myPath.get(j-1).pos.x,agents.get(i).myPath.get(j-1).pos.y,agents.get(i).myPath.get(j).pos.x,agents.get(i).myPath.get(j).pos.y);
+          stroke(5);
+          line(agents.get(i).myPath.get(j-1).pos.x,agents.get(i).myPath.get(j-1).pos.y,0,agents.get(i).myPath.get(j).pos.x,agents.get(i).myPath.get(j).pos.y,0);
         }
       }
   }
@@ -498,12 +539,12 @@ void keyPressed(){
   else if (keyCode == RIGHT){
     moveDirection = new PVector(15,0);
   }
-  else if (key == 'w') g_flags[1] = -10; // (-Z)
-  else if (key == 's') g_flags[1] =  10; // (+Z)
+  else if (key == 'w') g_flags[2] = -10; // (-Z)
+  else if (key == 's') g_flags[2] =  10; // (+Z)
   else if (key == 'a') g_flags[0] = -10; // (-X)
   else if (key == 'd') g_flags[0] =  10; // (+X)
-  else if (key == 'q') g_flags[2] =  10; // (+Y)
-  else if (key == 'e') g_flags[2] = -10; // (-Y)
+  else if (key == 'q') g_flags[1] =  10; // (+Y)
+  else if (key == 'e') g_flags[1] = -10; // (-Y)
   else if (key == 't') g_flags[3] =  1; // 
   else if (key == 'g') g_flags[3] = -1; // 
   else if (key == 'f') g_flags[4] =  1; // 
@@ -540,9 +581,9 @@ void keyPressed(){
 }
 
 void keyReleased() {
-  if      (key == 'w' || key == 's') { g_flags[1] = 0; }
+  if      (key == 'w' || key == 's') { g_flags[2] = 0; }
   else if (key == 'a' || key == 'd') { g_flags[0] = 0; }
-  else if (key == 'q' || key == 'e') { g_flags[2] = 0; }
+  else if (key == 'q' || key == 'e') { g_flags[1] = 0; }
   else if (key == 't' || key == 'g') { g_flags[3] = 0; }
   else if (key == 'f' || key == 'h') { g_flags[4] = 0; }
   else if (key == 'r' || key == 'y') { g_flags[5] = 0; }
