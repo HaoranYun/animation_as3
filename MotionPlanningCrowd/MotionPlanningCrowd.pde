@@ -114,8 +114,9 @@ boolean checkPath_CCD(PVector p1, PVector p2){
 
 
 void search(){
-  println(searchLimit);
+ 
   if(searchLimit < 0) {
+    println("Re-sample 1000 times but no path has been found.");
     //searchLimit = 1000;
     return;
   }
@@ -165,8 +166,10 @@ void search(){
 void sampleAllPoints(){
   
    searchLimit--;
-   if(searchLimit < 0) return;
-  
+   if(searchLimit < 0) {
+     println("Re-sample 1000 times but no path has been found.");
+     return;
+   }
   
   PVector sample_point;
   
@@ -209,7 +212,7 @@ void sampleAllPoints(){
 
 
 void sampleSomePoints(){
-  if(COMPARE_NAVIGATION_MODE)return;
+  //if(COMPARE_NAVIGATION_MODE)return;
     for (int i = 0; i < sample_number; i++) {
     if(!isFeasible(sample_points[i].pos)){
       PVector sample_point = new PVector(random(55,595), random(55,595));
@@ -323,20 +326,21 @@ void checkCompareResult(){
 }
 
 void checkNavigationCompareResult(){
+  println("Run 100 times PRM/RRT and calculate the average time.");
   float startTime2 = millis();
   for(int i = 0; i < 20; i ++){
     agents.get(1).searchPath(agents.get(0).pos, movingGoal1);
   }
-  println("PRM running Time: "+(millis() -startTime2));
+  if( agents.get(1).myPath.size()<1) println("No path for the agent with PRM");
+  println("PRM running Time: "+((millis() -startTime2))/100);
   
   
  startTime = millis();
  for(int i = 0; i < 20; i ++){
     agents.get(0).searchRRTPath(agents.get(0).pos, movingGoal1);
   }
-  println("RRT running Time: "+(millis() -startTime));
+  println("RRT running Time: "+((millis() -startTime))/100);
 
-  println(agents.get(0).myPath.size());
 }
 
 void setup() {
@@ -433,11 +437,12 @@ void draw() {
       if(SHOWPATH && agents.get(i).myPath.size()>0 ){
         for(int j = 1; j < agents.get(i).myPath.size(); j++){
           pushMatrix();
-          noStroke();
+          //noStroke();
+          strokeWeight(10);
           fill(255,0,0);
-
-          translate(agents.get(i).myPath.get(j).pos.x, agents.get(i).myPath.get(j).pos.y, 0);
-          sphere(5);
+          line(agents.get(i).myPath.get(j-1).pos.x,agents.get(i).myPath.get(j-1).pos.y,0,agents.get(i).myPath.get(j).pos.x,agents.get(i).myPath.get(j).pos.y,0);
+          //translate(agents.get(i).myPath.get(j).pos.x, agents.get(i).myPath.get(j).pos.y, 0);
+          //sphere(5);
           popMatrix();
           //line(agents.get(i).myPath.get(j-1).pos.x,agents.get(i).myPath.get(j-1).pos.y,agents.get(i).myPath.get(j).pos.x,agents.get(i).myPath.get(j).pos.y);
         }
@@ -448,7 +453,7 @@ void draw() {
   
   pushMatrix();
   noStroke();
-  fill(0,0,255);
+  fill(0,255,255);
 
   translate(agents.get(0).myGoal.pos.x, agents.get(0).myGoal.pos.y, 0);
   if(!(COMPARE_INTERACTION_MODE|| COMPARE_NAVIGATION_MODE)) 
@@ -505,9 +510,11 @@ void keyPressed(){
   }
   else{
     if(COMPARE_NAVIGATION_MODE){
-      
-      agents.get(0).setMyGoalRRT(PVector.add(moveDirection,agents.get(0).myGoal.pos));
-      agents.get(1).setMyGoal(PVector.add(moveDirection,agents.get(1).myGoal.pos));
+      PVector newGoal1  = PVector.add(moveDirection,agents.get(0).myGoal.pos);
+      if(isFeasible(newGoal1)){
+        agents.get(0).setMyGoalRRT(PVector.add(moveDirection,agents.get(0).myGoal.pos));
+        agents.get(1).setMyGoal(PVector.add(moveDirection,agents.get(1).myGoal.pos));
+      }
     }
     else{
       for(int i = 0; i < agents.size(); i ++){
@@ -515,9 +522,12 @@ void keyPressed(){
       }
     }
   }
-  
+  if(moveDirection.mag() == 0) return;
   if(keyCode != ENTER){
-    if(MOVE_GOAL) search();
+    if(MOVE_GOAL) {
+      searchLimit = 1000;
+      search();
+    }
     else sampleSomePoints();
   }
 }
