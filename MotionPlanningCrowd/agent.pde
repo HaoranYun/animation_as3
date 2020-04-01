@@ -59,7 +59,7 @@ class Agent{
     }
     
     goalForce = PVector.sub(myPath.get(idx).pos,pos).normalize().mult(maxSpeed).sub(vel);
-    if(COMPARE_NAVIGATION_MODE) force = new PVector(0,0,0);
+    //if(COMPARE_NAVIGATION_MODE) force = new PVector(0,0,0);
 
     if(force.mag() > 0)  vel.add(PVector.mult(force,dt));
     vel.add(PVector.mult(goalForce,dt));
@@ -202,13 +202,11 @@ class Agent{
   void setMyGoal(PVector goal){
     myGoal = new Milestone(goal.copy());
     myGoal.isGoal = true;
-    searchPath(pos,myGoal.pos);
   }
   
   void setMyGoalRRT(PVector goal){
     myGoal = new Milestone(goal.copy());
     myGoal.isGoal = true;
-    searchRRTPath(pos,myGoal.pos);
   }
   
   

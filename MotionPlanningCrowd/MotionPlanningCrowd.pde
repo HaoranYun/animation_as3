@@ -29,7 +29,7 @@ boolean TTC = false;
 boolean ODD_BEHAVIOR = false;
 
 // boids and TTC
-boolean COMPARE_INTERACTION_MODE = false;
+boolean COMPARE_INTERACTION_MODE = true;
 int AgentsInCompareMode = 20;
 
 
@@ -134,27 +134,18 @@ void search(){
   }
   
   int allNoPath = 0;
-  
-  
   for(int i = 0; i < agents.size(); i++){
     //agents.get(i).setGoalForce(new PVector(0,0));
     if(!agents.get(i).reachGoal)
     { 
-      agents.get(i).searchPath(agents.get(i).pos,movingGoal1);
+      if(agents.get(i).myGoal != null)agents.get(i).searchPath(agents.get(i).pos,agents.get(i).myGoal.pos);
       if(agents.get(i).myPath.size()<1) allNoPath ++;
     }
   }
   
-  for(int i = 20; i < agents.size(); i++){
-    if(!agents.get(i).reachGoal)
-    { 
-      agents.get(i).searchPath(agents.get(i).pos,movingGoal2);
-      if(agents.get(i).myPath.size()<1) allNoPath ++;
-    }
-  
-  }
+
   // if half agents could not find path, we will re-sample points
-  int limit = 15;
+  int limit = 10;
   
   if(allNoPath > limit) {
     sampleAllPoints();
@@ -280,9 +271,10 @@ void setupCompareInteractionMode(){
   //  obstacles.add(new Obstacle(obstacle_radius, 400, 130 + 100 *(i+4)));
   //}
 
-  // set up two group of agents
+  // set up one group of agents but run two times with two algorithm
   for(int i = 0; i < AgentsInCompareMode; i ++){
     agents.add(new Agent(new PVector(80 + 20*(i%5), 300 + 20* ((int)i/5 )),character_radius));
+    agents.get(i).setMyGoal(movingGoal1);
   }
 }
 
@@ -309,12 +301,14 @@ void setupCommonMode(){
 
   
 
-  // set up two group of agents
+  // set up two group of agents. The goal and start points would be different 
   for(int i = 0; i < 20; i ++){
     agents.add(new Agent(new PVector(80 + 20*(i%5), 300 + 20* ((int)i/5 )),character_radius));
+    agents.get(i).setMyGoal(movingGoal1);
   }
   for(int i = 0; i < 20; i ++){
     agents.add(new Agent(new PVector(400 + 20*((int)i/5), 500 + 20* ((int)i%5 )),character_radius));
+    agents.get(20+i).setMyGoal(movingGoal2);
   }
 }
 
@@ -535,16 +529,20 @@ void draw() {
   noStroke();
   fill(0,255,255);
 
-  translate(agents.get(0).myGoal.pos.x, agents.get(0).myGoal.pos.y, 0);
-  sphere(10);
+  if(agents.get(0).myGoal != null) {
+    translate(agents.get(0).myGoal.pos.x, agents.get(0).myGoal.pos.y, 0);
+    sphere(10);
+  }
   popMatrix();
   if(!(COMPARE_INTERACTION_MODE || COMPARE_NAVIGATION_MODE)) 
   {
     pushMatrix();
     noStroke();
     fill(0,255,0);
-    translate(agents.get(20).myGoal.pos.x, agents.get(20).myGoal.pos.y, 0);
-    sphere(10);
+    if(agents.get(20).myGoal != null) {
+      translate(agents.get(20).myGoal.pos.x, agents.get(20).myGoal.pos.y, 0);
+      sphere(10);
+    }
     popMatrix();
   }
   
@@ -591,6 +589,8 @@ void keyPressed(){
   else if (key == 'y') g_flags[5] =  1; // 
   else if (key == 'l') print(g_cam.GetStatusString());
   
+  if(moveDirection.mag() == 0) return;
+  
   if(!MOVE_GOAL) {
     obstacles.get(obstacles.size()-1).center.add(moveDirection);
   }
@@ -604,11 +604,13 @@ void keyPressed(){
     }
     else{
       for(int i = 0; i < agents.size(); i ++){
+        println("!!! :" + i);
         agents.get(i).setMyGoal(PVector.add(moveDirection,agents.get(i).myGoal.pos));
       }
     }
   }
-  if(moveDirection.mag() == 0) return;
+
+  
   if(keyCode != ENTER){
     if(MOVE_GOAL) {
       searchLimit = 1000;
