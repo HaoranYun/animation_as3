@@ -417,7 +417,9 @@ void setup() {
   
   startTime = millis();
   if(COMPARE_NAVIGATION_MODE) checkNavigationCompareResult();
-  if(COMPARE_A_STAR) compareAStar();
+  
+  // compare a star with bfs in common mode
+  if(!(COMPARE_NAVIGATION_MODE||COMPARE_INTERACTION_MODE) && COMPARE_A_STAR) compareAStar();
   
   
 }
