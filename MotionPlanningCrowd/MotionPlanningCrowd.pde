@@ -25,12 +25,15 @@ boolean MOVE_GOAL = false; // defualt: when direction keys are pressed, obstacle
 
 
 
-boolean TTC = true;
+boolean TTC = false;
 boolean ODD_BEHAVIOR = false;
 
+// boids and TTC
 boolean COMPARE_INTERACTION_MODE = false;
 int AgentsInCompareMode = 20;
 
+
+// RRT and PRM
 boolean COMPARE_NAVIGATION_MODE = false;
 boolean SMOOTH = COMPARE_NAVIGATION_MODE;
 
@@ -257,14 +260,25 @@ int countReachedAgent(){
 void setupCompareInteractionMode(){
   movingGoal1 = new PVector(600,300);
   movingGoal2 = new PVector(600,300);
+  
+  // Scenario 1
   for(int i = 0; i< 4; i++){
     obstacles.add(new Obstacle(obstacle_radius, 400, 100 + 100 *i));
   }
-
-  for(int i = 0; i< 2; i++){
-    //obstacles.add(new Obstacle(obstacle_radius, 520, 400));
-    obstacles.add(new Obstacle(obstacle_radius, 400, 130 + 100 *(i+4)));
+    
+  for(int i = 0; i< 4; i++){
+    obstacles.add(new Obstacle(obstacle_radius, 200, 200 + 100 *i));
   }
+  
+  // Scenario 2
+  //for(int i = 0; i< 4; i++){
+  //  obstacles.add(new Obstacle(obstacle_radius, 400, 100 + 100 *i));
+  //}
+
+  //for(int i = 0; i< 2; i++){
+  //  //obstacles.add(new Obstacle(obstacle_radius, 520, 400));
+  //  obstacles.add(new Obstacle(obstacle_radius, 400, 130 + 100 *(i+4)));
+  //}
 
   // set up two group of agents
   for(int i = 0; i < AgentsInCompareMode; i ++){
@@ -277,13 +291,23 @@ void setupCompareInteractionMode(){
 
 void setupCommonMode(){
   movingGoal2 = new PVector(100,300);
-  for(int i = 0; i< 4; i++){
-    obstacles.add(new Obstacle(obstacle_radius, 400, 100 + 100 *i));
-  }
+  //for(int i = 0; i< 4; i++){
+  //  obstacles.add(new Obstacle(obstacle_radius, 400, 100 + 100 *i));
+  //}
 
-  for(int i = 0; i< 1; i++){
-    obstacles.add(new Obstacle(obstacle_radius, 520, 400));
-  }
+  //for(int i = 0; i< 1; i++){
+  //  obstacles.add(new Obstacle(obstacle_radius, 520, 400));
+  //}
+  
+      for(int i = 0; i< 4; i++){
+      obstacles.add(new Obstacle(obstacle_radius, 400, 100 + 100 *i));
+    }
+    
+    for(int i = 0; i< 4; i++){
+      obstacles.add(new Obstacle(obstacle_radius, 200, 200 + 100 *i));
+    }
+
+  
 
   // set up two group of agents
   for(int i = 0; i < 20; i ++){
@@ -296,6 +320,12 @@ void setupCommonMode(){
 
 
 void  setupCompareNavigationMode(){
+  
+  for(int i = 0; i < 2; i ++){
+    agents.add(new Agent(new PVector(80, 300),character_radius));
+  }
+  
+  // Scenario 1
   for(int i = 0; i< 4; i++){
     obstacles.add(new Obstacle(obstacle_radius, 400, 100 + 100 *i));
   }
@@ -303,9 +333,17 @@ void  setupCompareNavigationMode(){
   for(int i = 0; i< 1; i++){
     obstacles.add(new Obstacle(obstacle_radius, 520, 400));
   }
-  for(int i = 0; i < 2; i ++){
-    agents.add(new Agent(new PVector(80, 300),character_radius));
-  }
+  
+  // Scenario 2
+  
+    //for(int i = 0; i< 4; i++){
+    //  obstacles.add(new Obstacle(obstacle_radius, 400, 100 + 100 *i));
+    //}
+    
+    //for(int i = 0; i< 4; i++){
+    //  obstacles.add(new Obstacle(obstacle_radius, 200, 200 + 100 *i));
+    //}
+  
 }
 
 void checkCompareResult(){
@@ -417,7 +455,7 @@ void draw() {
   
   //floor
   pushMatrix();
-  fill(51,255,51);
+  fill(255,255,102);
   translate(325,300,-25);
   stroke(10);
   box(600,600,50);
