@@ -65,7 +65,7 @@ class Camera3 implements MyCamera {
   Mat3 orientation;
   
   Camera3() { 
-    pos = new PVector(0, 0, 500);
+    pos = new PVector(320, 300, 550);
     orientation = new Mat3();
   }
   void Apply() {

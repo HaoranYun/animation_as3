@@ -20,9 +20,12 @@ class Agent{
   
   PVector prevPos;
   
+  boolean runBFS= false;
   
   //store RRT graph
   ArrayList<Milestone> myGraph;
+  
+  
   Agent(PVector position, float radius){
     pos = new PVector(position.x, position.y);
     goalForce = new PVector(0,0);
@@ -59,7 +62,7 @@ class Agent{
     }
     
     goalForce = PVector.sub(myPath.get(idx).pos,pos).normalize().mult(maxSpeed).sub(vel);
-    //if(COMPARE_NAVIGATION_MODE) force = new PVector(0,0,0);
+    if(COMPARE_NAVIGATION_MODE) force = new PVector(0,0,0);
 
     if(force.mag() > 0)  vel.add(PVector.mult(force,dt));
     vel.add(PVector.mult(goalForce,dt));
@@ -235,6 +238,8 @@ class Agent{
       
       Milestone curr = sample_points[i];
       curr.reset(start,goal);
+      if(runBFS) curr.h = 0;
+      
       boolean feasibleStart = checkPath_CCD(myStart.pos, curr.pos);
       boolean feasibleGoal = checkPath_CCD(myGoal.pos, curr.pos);
     
@@ -250,7 +255,11 @@ class Agent{
     }
     
     boolean runResult;
-    runResult = A_star();
+    if(runBFS){
+      runResult = bfs();
+    }
+    else runResult = A_star();
+    
     
     if(runResult){
       buildPath();
@@ -283,6 +292,40 @@ class Agent{
     return false;
   }
   
+ 
+ boolean bfs(){
+ 
+   PriorityQueue<Milestone> fringe = new PriorityQueue<Milestone>(new MyCompare());
+  
+  // add start point to the queue
+    myStart.isVisited = true;
+    fringe.add(myStart);
+    
+    int iter = 0;
+    while (fringe.size() >0){
+      Milestone curr = fringe.poll();
+      iter++;
+      if(curr.isGoal) {
+        return true;
+     }
+      int num_neighbors = curr.neighbors.size();
+      for(int i = 0; i < num_neighbors; i++){
+        //println("i:" + i);
+        Milestone child = curr.neighbors.get(i);
+        if(!child.isVisited){
+          child.parent = curr;
+          child.g = curr.g + straightDistance(child.pos,curr.pos);
+          child.isVisited = true;
+          fringe.add(child);
+        }
+      }
+   }
+  
+    return false;
+  }
+  
+  
+  
   void buildPath(){
     
     Milestone curr = myGoal;
@@ -297,6 +340,9 @@ class Agent{
     Collections.reverse(myPath);
     idx++;
   }
+  
+  
+  
   
   // RRT implementation
    void searchRRTPath(PVector start, PVector goal){

@@ -29,13 +29,16 @@ boolean TTC = false;
 boolean ODD_BEHAVIOR = false;
 
 // boids and TTC
-boolean COMPARE_INTERACTION_MODE = true;
+boolean COMPARE_INTERACTION_MODE = false;
 int AgentsInCompareMode = 20;
 
 
 // RRT and PRM
 boolean COMPARE_NAVIGATION_MODE = false;
 boolean SMOOTH = COMPARE_NAVIGATION_MODE;
+
+
+boolean COMPARE_A_STAR = true;
 
 int runTime = 0;
 
@@ -361,19 +364,36 @@ void checkCompareResult(){
 void checkNavigationCompareResult(){
   println("Run 100 times PRM/RRT and calculate the average time.");
   float startTime2 = millis();
-  for(int i = 0; i < 20; i ++){
-    agents.get(1).searchPath(agents.get(0).pos, movingGoal1);
+  for(int i = 0; i < 100; i ++){
+    agents.get(1).searchPath(agents.get(1).pos, movingGoal1);
   }
   if( agents.get(1).myPath.size()<1) println("No path for the agent with PRM");
   println("PRM running Time: "+((millis() -startTime2))/100);
   
   
  startTime = millis();
- for(int i = 0; i < 20; i ++){
+ for(int i = 0; i < 100; i ++){
     agents.get(0).searchRRTPath(agents.get(0).pos, movingGoal1);
   }
   println("RRT running Time: "+((millis() -startTime))/100);
 
+}
+
+void compareAStar(){
+  println("Run 100 times A*/BFS and calculate the average time.");
+  float startTime2 = millis();
+  for(int i = 0; i < agents.size(); i++){
+    agents.get(i).runBFS = true;
+    agents.get(i).searchPath(agents.get(i).pos, agents.get(i).myGoal.pos);
+  }
+  println("BFS running Time: "+((millis() -startTime2))/100);
+  
+  startTime = millis();
+  for(int i = 0; i < agents.size(); i++){
+    agents.get(i).runBFS = false;
+    agents.get(i).searchPath(agents.get(i).pos, agents.get(i).myGoal.pos);
+  }
+  println("A* running Time: "+((millis() -startTime))/100);
 }
 
 void setup() {
@@ -397,7 +417,7 @@ void setup() {
   
   startTime = millis();
   if(COMPARE_NAVIGATION_MODE) checkNavigationCompareResult();
-  //else search();
+  if(COMPARE_A_STAR) compareAStar();
   
   
 }
